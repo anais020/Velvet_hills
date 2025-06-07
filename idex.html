@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Velvet Hills - Jeu Otome</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #121212; color: #eee; max-width: 600px; margin: auto; padding: 20px; }
+  h1, h2 { color: #f4623a; }
+  button { background: #f4623a; border: none; color: white; padding: 10px 20px; margin: 5px 0; cursor: pointer; border-radius: 5px; width: 100%; font-size: 1em; }
+  button:hover { background: #d04e26; }
+  #affection { margin-top: 10px; font-size: 0.9em; color: #ccc;}
+</style>
+</head>
+<body>
+
+<h1>Velvet Hills - Première Partie</h1>
+<div id="scene"></div>
+<div id="choices"></div>
+<div id="affection"></div>
+
+<script>
+  // Personnages avec affection de base 0
+  const characters = {
+    Max: 0,
+    Lana: 0,
+    Lucas: 0
+  };
+
+  let currentScene = 'scene1';
+
+  // Texte et choix par scène
+  const scenes = {
+    scene1: {
+      text: "Tu viens d'arriver à Velvet Hills. Que veux-tu faire en premier ?",
+      choices: [
+        { text: "Explorer le quartier Est à pied", next: 'scene2a', affection: {Max: 5, Lana: 5} },
+        { text: "Aller à la supérette chercher du travail", next: 'scene2b' },
+        { text: "Rester chez toi pour dessiner ou jouer de la guitare", next: 'scene2c' }
+      ]
+    },
+    scene2a: {
+      text: "En explorant, tu rencontres Lana, une artiste bohème sympathique. Que fais-tu ?",
+      choices: [
+        { text: "Parler avec Lana et apprendre à la connaître", next: 'scene3', affection: {Lana: 10} },
+        { text: "Être réservée et continuer ton exploration", next: 'scene3' }
+      ]
+    },
+    scene2b: {
+      text: "À la supérette, tu rencontres Lucas, un collègue potentiel. Comment réagis-tu ?",
+      choices: [
+        { text: "Lui parler gentiment", next: 'scene3', affection: {Lucas: 10} },
+        { text: "Rester réservée", next: 'scene3' },
+        { text: "Faire une blague pour briser la glace", next: 'scene3', affection: {Lucas: 5} }
+      ]
+    },
+    scene2c: {
+      text: "Tu profites d'un moment calme chez toi, en jouant de la guitare et dessinant.",
+      choices: [
+        { text: "Aller au café 'Le Corbeau Bleu' ce soir", next: 'scene3' }
+      ]
+    },
+    scene3: {
+      text: "Le soir, tu vas au café 'Le Corbeau Bleu' pour découvrir la scène locale.",
+      choices: [
+        { text: "Approcher Max, le batteur, et accepter une jam session", next: 'end', affection: {Max: 10} },
+        { text: "Observer seul(e) et rester dans ton coin", next: 'end' }
+      ]
+    },
+    end: {
+      text: "Fin de cette première partie. Tu peux relancer pour essayer d'autres choix et découvrir d'autres chemins !",
+      choices: [
+        { text: "Recommencer", next: 'scene1', reset: true }
+      ]
+    }
+  };
+
+  function updateAffectionDisplay() {
+    let affText = "Affection : ";
+    affText += Object.entries(characters).map(([k,v]) => `${k} : ${v}`).join(" | ");
+    document.getElementById('affection').textContent = affText;
+  }
+
+  function renderScene(sceneKey) {
+    const scene = scenes[sceneKey];
+    const sceneDiv = document.getElementById('scene');
+    const choicesDiv = document.getElementById('choices');
+    sceneDiv.textContent = scene.text;
+    choicesDiv.innerHTML = '';
+
+    scene.choices.forEach(choice => {
+      const btn = document.createElement('button');
+      btn.textContent = choice.text;
+      btn.onclick = () => {
+        if (choice.reset) {
+          // reset affection scores
+          for (const c in characters) characters[c] = 0;
+          updateAffectionDisplay();
+        }
+        if (choice.affection) {
+          for (const [char, val] of Object.entries(choice.affection)) {
+            characters[char] += val;
+            if(characters[char] > 100) characters[char] = 100;
+            if(characters[char] < -100) characters[char] = -100;
+          }
+          updateAffectionDisplay();
+        }
+        renderScene(choice.next);
+      };
+      choicesDiv.appendChild(btn);
+    });
+  }
+
+  // Init
+  updateAffectionDisplay();
+  renderScene(currentScene);
+</script>
+
+</body>
+</html>
+		
